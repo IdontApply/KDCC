@@ -1,0 +1,8 @@
+{
+    "cloudcode.last-used-context": {
+        "Run on Kubernetes": {
+            "kubeConfigPath": "C:\\Users\\hmayt\\.kube\\config",
+            "contextName": "gke_kdcc-272111_us-west1-a_c1"
+        }
+    }
+}
