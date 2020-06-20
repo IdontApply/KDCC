@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: airflow
+  name: airflow
+  #namespace: dataplatform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow
+  template:
+    metadata:
+      labels:
+        app: airflow
+    spec:
+      containers:
+      - name: airflow
+        image: airflow:1.2
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /opt/airflow/dags
+          name: airflow-dags
+          readOnly: true
+        - mountPath: /opt/airflow/airflow.cfg
+          name: airflow-cfgfile
+          subPath: airflow.cfg
+      - name: git-sync-clone
+        image: k8s.gcr.io/git-sync:v3.1.2
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - configMapRef:
+            name: airflow-gitsync
+        - secretRef:
+            name: airflow-secrets
+        volumeMounts:
+          - mountPath: /git
+            name: airflow-dags
+      serviceAccount: serviceaccount
+      serviceAccountName: serviceaccount
+      volumes:
+      - configMap:
+          name: airflow-cfgfile
+        name: airflow-cfgfile
+      - configMap:
+          name: airflow-gitsync
+        name: airflow-gitsync
+      - emptyDir: {}
+        name: airflow-dags

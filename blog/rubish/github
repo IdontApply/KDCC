@@ -1,0 +1,10 @@
+https://61f4f9e788123bdca0bfd7bf92aae2c821d32548@github.com/IdontApply/KDCC_DAGs.git
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install my-release bitnami/airflow \
+  --values ./airflow-bitnami.values.yaml
+postgres://postgresadmin:admin123@postgres:5432/postgresdb
+
+helm install stable/airflow \
+  --name "myflow" \
+  --values ./custom-values.yaml

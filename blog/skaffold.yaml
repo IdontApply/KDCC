@@ -5,8 +5,17 @@ build:
     sha256: {}
   # defines where to find the code at build time and where to push the resulting image
   artifacts:
-  - context: src
+  - context: src/blog
     image: blog
+  - context: src/postgres
+    image: postgres
+  # - context: src/jupyter-viola
+  #   image: jup
+  # - context: src/jupyter-viola
+  #   image: jup
+  - context: src/python
+    image: python-worker
+
 # defines the Kubernetes manifests to deploy on each run
 deploy:
   kubectl:

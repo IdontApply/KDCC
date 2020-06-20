@@ -1,0 +1,74 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: coinflip-
+spec:
+  entrypoint: coinflip
+  templates:
+  - name: coinflip
+    steps:
+    - - name: check
+        template: check
+    - - name: heads
+        template: heads
+        when: "{{steps.flip-coin.outputs.result}} == heads"
+      - name: tails
+        template: tails
+        when: "{{steps.flip-coin.outputs.result}} == tails"
+
+  - name: check
+    script:
+      image: gcr.io/kdcc-272111/python-worker:latest
+      env:
+        - name: POSTGRES_HOST
+          value: postgres.default
+        - name: POSTGRES_PORT
+          value: "27017"
+        # - name: CONFIG_FILE
+        #   value: /etc/config/config.yaml
+        - name: POSTGRES_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret-config
+              key: dbname
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret-config
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret-config
+              key: password
+      command: [python]
+      source: |
+
+        import mualchemy.aualchemy as au
+        pdates, search, product, sales, seller , session = au.tables()
+        sellertable = session.query(seller).filter_by(rated = None).first()# clean
+        s = sellertable# cleab
+        sellername = s.name
+        seller_id = s.id
+  - name: heads
+    container:
+      image: alpine:3.6
+      command: [sh, -c]
+      args: ["echo \"it was heads\""]
+
+  - name: tails
+    container:
+      image: alpine:3.6
+      command: [sh, -c]
+      args: ["echo \"it was tails\""]
+  # - name: scraper
+  #   container:
+  #     image: gcr.io/kdcc-272111/python-worker:latest
+  #     command: [sh, -c]
+  #     args: ["cowsay hello world | tee /tmp/hello_world.txt"]
+
+  #   outputs:
+  #     artifacts:
+
+
+  

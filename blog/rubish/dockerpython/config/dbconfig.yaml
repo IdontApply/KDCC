@@ -1,0 +1,5 @@
+postgres:
+    host: db
+    user: admin
+    passwd: admin
+    db: test

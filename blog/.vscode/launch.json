@@ -4,11 +4,16 @@
             "name": "Run on Kubernetes",
             "type": "cloudcode.kubernetes",
             "request": "launch",
-            "skaffoldConfig": "${workspaceFolder}\\skaffold.yaml",
+            "skaffoldConfig": "${workspaceFolder}/skaffold.yaml",
             "watch": true,
             "cleanUp": true,
             "portForward": true,
             "imageRegistry": "gcr.io/kdcc-272111"
+        },
+        {
+            "name": "Local Process with Kubernetes (Preview)",
+            "type": "dev-spaces-connect-configuration",
+            "request": "launch"
         }
     ]
 }

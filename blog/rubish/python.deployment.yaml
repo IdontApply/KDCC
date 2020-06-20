@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: python-worker
+
+spec:
+  containers:
+  - name: python-worker
+    image: python-worker
+    imagePullPolicy: IfNotPresent
+    stdin: true 
+    tty: true 
+        # resources:
+        #  limits:
+        #    memory: "500Mi"
+        #    cpu: "0.1"
+
+        # env:
+        # - name: PORT
+        #   value: "3000"

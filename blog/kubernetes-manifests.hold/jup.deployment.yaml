@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jup
+spec:
+#  replicas: 1
+  selector:
+    matchLabels:
+      app: jup
+  template:
+    metadata:
+      labels:
+        app: jup
+    spec:
+      containers:
+      - name: jup
+        image: jup
+        command: ["/bin/sh","-c"]
+        args: ["voila test.ipynb --debug --ExecutePreprocessor.timeout=180 --port 3001; ls -al" ]
+      nodeSelector:
+        memory: high
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jup
+spec:
+  type: NodePort
+  selector:
+    app: jup
+  ports:
+  - port: 3001
+    protocol: TCP
+    targetPort: 3001
