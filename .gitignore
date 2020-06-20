@@ -2,10 +2,6 @@ python-guestbook/
 microblog-old/
 microblog-old/
 blog-stack-old/
-python-guestbook/
-microblog-old/
-microblog-old/
-blog-stack-old/
 energy
-.ipynb_*
 blog/src/jupyter-viola/.ipynb_checkpoints
+blog/src/jupyter-viola/csv
