@@ -4,4 +4,8 @@ microblog-old/
 blog-stack-old/
 energy
 blog/src/jupyter-viola/.ipynb_checkpoints
+<<<<<<< HEAD
 blog/src/jupyter-viola/csv
+=======
+blog/src/jupyter-viola/csv
+>>>>>>> bd3a0ddcac0100d1efa66fa565a50fb8121849f0
