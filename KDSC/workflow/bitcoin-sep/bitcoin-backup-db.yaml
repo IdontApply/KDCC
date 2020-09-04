@@ -1,0 +1,43 @@
+
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: bitcoin-comment-process-db-post-
+spec:
+  entrypoint: backup
+  templates:
+
+
+
+  - name: backup
+    container:
+      env:
+      - name: PGDATABASE
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: dbname
+      - name: PGUSER
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: username
+      - name: PGPASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: password
+      - name: PGHOST
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: host
+      - name: PGPORT
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: port
+      image: gcr.io/kdcc-282418/psql-worker
+      command: [sh]
+      args: ["backup.sh"]
+

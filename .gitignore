@@ -1,10 +1,9 @@
-python-guestbook/
-microblog-old/
-microblog-old/
-blog-stack-old/
 energy
-blog/src/jupyter-viola/.ipynb_checkpoints
-blog/src/jupyter-viola/csv
-blog/src/jupyter-viola/test.ipynb
-
+KDSC/src/jupyter-viola/.ipynb_checkpoints
+KDSC/src/jupyter-viola/csv
+KDSC/src/jupyter-viola/test.ipynb
+rubish/
+.vscode
+KDSC/kubernetes-kubectl/aws.secrets.mine.yaml
+scrapyard
 

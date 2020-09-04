@@ -1,0 +1,59 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: bitcoin-comment-process-db-post-
+spec:
+  entrypoint: bitcoin-process-block
+  templates:
+
+
+  - name: bitcoin-process-block
+    parallelism: 3
+    steps:
+    - - name: g1-4
+        template: g1-4
+
+    - - name: 1-4
+        template: 1-4
+        arguments:
+          parameters:
+          - name: url
+            value: "{{item}}"
+        withParam: "{{steps.g1-4.outputs.result}}"
+
+    - - name: five
+        template: five
+ 
+
+
+
+  - name: g1-4
+    script:
+      image: gcr.io/kdcc-282418/python-worker
+      command: [python]
+      source: |
+        import json
+        import sys
+
+        json.dump([x for x in range(5)], sys.stdout)
+
+
+  - name: 1-4
+    inputs:
+      parameters:
+      - name: url
+    script:
+      image: gcr.io/kdcc-282418/python-worker
+      command: [python]
+      source: |
+        print("{{inputs.parameters.url}}")
+
+
+
+
+  - name: five
+    script:
+      image: gcr.io/kdcc-282418/python-worker
+      command: [python]
+      source: |
+        print(5)

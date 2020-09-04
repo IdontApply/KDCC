@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: post-bitcoin-
+spec:
+  entrypoint: post-bitcoin
+  templates:  
+  
+  
+  
+  
+  # run jupyter notebook, convert it into html and post it into s3.
+  - name: post-bitcoin
+    script:
+      image: gcr.io/kdcc-282418/bitcoin-worker
+      env:
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret-config
+              key: access_key
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret-config
+              key: key_id
+        - name: POSTGRES_DATABASE
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret-config
+              key: dbname
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret-config
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret-config
+              key: password
+        - name: POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret-config
+              key: host
+        - name: POSTGRES_PORT
+          valueFrom:
+            secretKeyRef:
+              name: postgres-secret-config
+              key: port
+      command: [python]
+      source: |
+        import sys
+
+        from wfunc import func
+
+        func.post_notebook('bitcoin','maythamalherz.com')
+        sys.exit()
+ 

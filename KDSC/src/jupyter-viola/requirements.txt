@@ -1,0 +1,8 @@
+pandas
+matplotlib
+numpy
+folium
+shapely
+branca
+geopy
+minio

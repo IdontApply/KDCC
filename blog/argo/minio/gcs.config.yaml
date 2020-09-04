@@ -1,6 +1,0 @@
-artifacts:
-  - name: message
-    path: /tmp/message
-    gcs:
-      bucket: argo_bucket_1
-      key: test

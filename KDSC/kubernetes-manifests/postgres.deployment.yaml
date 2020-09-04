@@ -1,0 +1,62 @@
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    namespace: default
+    name: postgres
+  spec:
+    replicas: 1
+    selector:
+      matchLabels:
+        app: postgres
+    template:
+      metadata:
+        labels:
+          app: postgres
+      spec:
+        containers:
+          - name: postgres
+            image: postgres
+            ports:
+              - containerPort: 5432
+            # envFrom:
+            #   - configMapRef:
+            #       name: postgres-config
+            volumeMounts:
+              - mountPath: "/var/data/"
+                name: mypd
+            env:
+              - name: POSTGRES_DB
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-secret-config
+                    key: dbname
+              - name: POSTGRES_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-secret-config
+                    key: username
+              - name: POSTGRES_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: postgres-secret-config
+                    key: password
+        volumes:
+           - name: mypd
+             persistentVolumeClaim:
+               claimName: postgres-pv-claim 
+        # nodeSelector:
+        #   duration : long
+
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   namespace: default
+#   name: postgres-config
+#   labels:
+#     app: postgres
+# data:
+#   POSTGRES_DB: "eco"
+#   POSTGRES_USER: "admin"
+#   POSTGRES_PASSWORD: "admin1234"
+# ---
+                  
