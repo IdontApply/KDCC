@@ -1,0 +1,134 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: bitcoin-comment-process-
+spec:
+  entrypoint: bitcoin-comment-process
+  templates:
+  - name: bitcoin-comment-process
+    # inputs:
+    #   parameters:
+    #   - name: urls
+    container:
+      env:
+      - name: POSTGRES_DATABASE
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: dbname
+      - name: POSTGRES_USER
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: username
+      - name: POSTGRES_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: password
+      - name: POSTGRES_HOST
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: host
+      - name: POSTGRES_PORT
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: port
+      image: gcr.io/kdcc-282418/bitcoin-worker
+      command: [python]
+      args: ["wfunc/wfunc/bitcoin-comment-process.py"]
+
+
+
+
+
+
+
+
+  # - name: bitcoin-get-comments-price
+  #   inputs:
+  #     parameters:
+  #     - name: urls
+  #   script:
+  #     image: gcr.io/kdcc-282418/getter-worker
+  #     # env:
+  #     #   - name: AWS_SECRET_ACCESS_KEY
+  #     #     valueFrom:
+  #     #       secretKeyRef:
+  #     #         name: aws-secret-config
+  #     #         key: access_key
+  #     #   - name: AWS_ACCESS_KEY_ID
+  #     #     valueFrom:
+  #     #       secretKeyRef:
+  #     #         name: aws-secret-config
+  #     #         key: key_id
+  #     command: [python]
+  #     source: |
+  #       from wfunc import func
+  #       import os
+      
+  #       bucket = 'workflowkddc' 
+  #       prefix = 'Bitcoin/comments' 
+  #       filetype = 'txt'
+  #       url = "{{inputs.parameters.urls}}"
+  #       # path = 'gs://workflowkddc/Bitcoin/RC_2011-01.txt'
+  #       path = func.get_parse_json_to_gcs(url, bucket, prefix, filetype)
+
+  #       if not os.path.exists('tmp'):
+  #         os.makedirs('tmp')
+  #       with open("/tmp/path.txt", 'w') as w:
+  #         w.write(path)
+  #       # print('func.get_parse_json_to_gcs')
+
+  #   outputs:
+  #     parameters:
+  #     - name: path       # name of output parameter
+  #       valueFrom:
+  #         path: /tmp/path.txt
+
+  
+  # - name: clean
+  #   inputs:
+  #     parameters:
+  #     - name: message
+  #   container:
+  #     image: gcr.io/kdcc-282418/bitcoin-worker
+  #     command: [python]
+  #     args: ["wfunc/wfunc/bitcoin.py","{{inputs.parameters.message}}"]
+
+    # - name: bitcoin-process-raw
+  #   parallelism: 3
+  #   steps:
+  #   - - name: genrate-list-raw-comments
+  #       template: genrate-list-raw-comments
+
+  #   - - name: process
+  #       template: process
+  #       arguments:
+  #         parameters:
+  #         - name: urls
+  #           value: "{{item}}"
+  #       withParam: "{{steps.genrate-list-raw-comments.outputs.result}}"
+
+
+
+  # - name: genrate-list-raw-comments
+  #   script:
+  #     image: gcr.io/kdcc-282418/python-worker
+  #     command: [python]
+  #     source: |
+  #       import json
+  #       import sys
+  #       from google.cloud import storage
+
+  #       def get_file_names():
+  #         files = []
+  #         client = storage.Client()
+  #         for blob in client.list_blobs('workflowkddc', prefix='Bitcoin/comments/raw/'):
+  #           files.append(str(blob.name))
+  #         return files
+        
+  #       json.dump(get_file_names(), sys.stdout)
+

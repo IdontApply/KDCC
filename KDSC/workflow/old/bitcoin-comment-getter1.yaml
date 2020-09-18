@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: bitcoin-comment-getter-
+spec:
+  entrypoint: bitcoin-get-comments
+  templates:
+
+
+  - name: bitcoin-get-comments
+    script:
+      image: gcr.io/kdcc-282418/getter-worker
+      command: [python]
+      source: |
+        from wfunc import func
+        import os
+      
+        bucket = 'workflowkddc' 
+        prefix = 'Bitcoin/comments' 
+        filetype = 'txt'
+        x='2018-03'
+        url = "https://files.pushshift.io/reddit/comments/RC_{}.xz".format(x)
+        # path = 'gs://workflowkddc/Bitcoin/RC_2011-01.txt'
+        path = func.get_parse_json_to_gcs(url, bucket, prefix, filetype)
+
+
+  # if not os.path.exists('tmp'):
+  #   os.makedirs('tmp')
+  # with open("/tmp/path.txt", 'w') as w:
+  #   w.write(path)
+  # # print('func.get_parse_json_to_gcs')
+
+    # outputs:
+    #   parameters:
+    #   - name: path       # name of output parameter
+    #     valueFrom:
+    #       path: /tmp/path.txt
+

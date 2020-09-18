@@ -1,0 +1,112 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: bitcoin-price-
+spec:
+  entrypoint: bitcoin-process-block
+  templates:
+
+
+
+  - name: bitcoin-process-block
+    parallelism: 2
+    steps:
+    - - name: genrate-list-raw-price
+        template: genrate-list-raw-price
+
+    - - name: process-insert
+        template: bitcoin-price-to-database
+        arguments:
+          parameters:
+          - name: url
+            value: "{{item}}"
+        withParam: "{{steps.genrate-list-raw-price.outputs.result}}"
+
+
+
+  - name: genrate-list-raw-price
+    script:
+      image: gcr.io/kdcc-282418/python-worker
+      command: [python]
+      source: |
+        import json
+        import sys
+        from google.cloud import storage
+
+        def get_file_names():
+          files = []
+          client = storage.Client()
+          for blob in client.list_blobs('workflowkddc', prefix='Bitcoin/price/'):
+            files.append(str(blob.name))
+          return files
+
+        
+        json.dump(get_file_names(), sys.stdout)
+
+  - name: bitcoin-price-to-database
+    inputs:
+      parameters:
+      - name: url
+    script:
+
+      env:
+      - name: POSTGRES_DATABASE
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: dbname
+      - name: POSTGRES_USER
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: username
+      - name: POSTGRES_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: password
+      - name: POSTGRES_HOST
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: host
+      - name: POSTGRES_PORT
+        valueFrom:
+          secretKeyRef:
+            name: postgres-secret-config
+            key: port
+      image: gcr.io/kdcc-282418/bitcoin-worker
+      command: [python]
+      source: |
+        from google.cloud import storage
+        from wfunc import db
+        from smart_open import open as sopen
+        import csv
+        from io import StringIO
+
+        db = db.Mydatabase()
+
+        path = '{{inputs.parameters.url}}'
+        name = path.split('/')[-1]
+        if name[0] == 'c':
+          table_name = 'coinbase'
+        else:
+          table_name = 'bitbase'
+        bucket = 'workflowkddc' 
+        
+        
+        with sopen( 'gs://{}/{}'.format(bucket, path), 'r') as r:
+            next(r)
+            reader = csv.reader(r)
+            for line in reader:
+
+                q  = """INSERT INTO timeseries VALUES (%s) ON CONFLICT DO NOTHING;
+                INSERT INTO {} VALUES ( %s, %s, %s, %s, %s, %s, %s, %s) ON CONFLICT DO NOTHING
+                            """.format(table_name)
+                parameters = [int(line[0])]
+
+                db.query( q, parameters = [int(line[0])]  + [int(line[0])] + list(map(float,line[1:])) )
+                db.commit()
+            
+            db.close()
+        

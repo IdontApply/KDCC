@@ -1,0 +1,99 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: german-energy-
+spec:
+  entrypoint: german-energy
+  templates:
+  - name: german-energy
+    steps:
+      # tasks:
+    - - name: get-clean
+        template: get-clean
+
+    - - name: post-germanyenergy
+        # dependencies: [get-clean]
+        template: post-germanyenergy
+
+  - name: get-clean
+    script:
+      image: gcr.io/kdcc-282418/germanen-worker
+      command: [python3]
+      source: |
+          import sys
+          import os
+          print(os.system('pip list'))
+          print(sys.path)
+          from wfunc import depower
+          from wfunc import func
+          
+
+
+          urls = {'conventional_plants.csv':'https://data.open-power-system-data.org/conventional_power_plants/2018-12-20/conventional_power_plants_DE.csv',
+          'german_polgon.json':'https://raw.githubusercontent.com/isellsoap/deutschlandGeoJSON/master/4_kreise/2_hoch.geo.json'}
+          bucket = 'workflowkddc'
+          func.get(bucket, urls, 'germanen')
+          dfc = depower.fill_missing_data(list(urls)[0])
+          depower.powersetter(dfc, list(urls)[1])
+          os.system('gsutil cp output.geojson gs://workflowkddc/germanen/output.geojson')
+          print('end of save_minio out')
+          sys.exit()
+
+  - name: post-germanyenergy
+    script:
+      image: gcr.io/kdcc-282418/germanen-worker
+      env:
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret-config
+              key: access_key
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret-config
+              key: key_id
+      command: [python3]
+      source: |
+        import sys
+        
+
+
+        from wfunc import func
+
+        func.post_notebook('germanyenergy','maythamalherz.com')
+        # func.dump_prefixed_s3('workflow', 'workflowkdcc', 'germanyenergy')
+        sys.exit()
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ ########################################################
+ 
+  # - name: get-clean
+  #   script:
+      
+  #     image: gcr.io/kdcc-282418/jup
+  #     env:
+  #       - name: AWS_SECRET_ACCESS_KEY
+  #         valueFrom:
+  #           secretKeyRef:
+  #             name: aws-secret-config
+  #             key: access_key
+  #       - name: AWS_ACCESS_KEY_ID
+  #         valueFrom:
+  #           secretKeyRef:
+  #             name: aws-secret-config
+  #             key: key_id
+  #     command: ["jupyter trust test.ipynb;voila --debug test.ipynb --ExecutePreprocessor.timeout=180 --port 3001; ls -al" ]
+  #     source: |
+  #         import nbconvert
+  #         import boto3
+
+
+  #         s3 = boto3.resource('s3')
+  #         bucket = s3.Bucket('workflowkdcc')
+  #         bucket

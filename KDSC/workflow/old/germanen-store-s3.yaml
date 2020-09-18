@@ -1,0 +1,71 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: post-germanyenergy-
+spec:
+  entrypoint: post-germanyenergy
+  templates:
+
+  - name: post-germanyenergy
+    script:
+      image: gcr.io/kdcc-282418/jup
+      env:
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret-config
+              key: access_key
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              name: aws-secret-config
+              key: key_id
+      command: [python]
+      source: |
+        # import subprocess
+        import boto3
+        import nbformat
+        from nbconvert import HTMLExporter
+        from nbconvert.preprocessors import ExecutePreprocessor
+        
+        # s3 = boto3.resource('s3')
+        # bucket = s3.Bucket('maythamalherz.com')
+
+        # notebook_filename = 'germanyenergy'
+        # notebook_ipynb = notebook_filename + '.ipynb'
+        # notebook_html = notebook_filename + ".html"
+        
+        # command = 'jupyter nbconvert --to html --template full ' + 'germanyenergy'
+        # process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
+        # output, error = process.communicate()
+
+        # bucket.put_object(Key=notebook_html, Body=notebook_html, ContentType='text/html', ACL= 'public-read' )
+        
+
+
+        def post_notebook(notebook_filename, bucket_name ):
+             
+            notebook_ipynb = notebook_filename + '.ipynb'
+            notebook_html = notebook_filename + ".html"
+            # nbconvert --to html --template full
+            with open(notebook_ipynb) as f:
+                nb = nbformat.read(f, as_version=4)
+
+            ep = ExecutePreprocessor(timeout=600, kernel_name='python3')
+
+            ep.preprocess(nb, {'metadata': {'path': ''}})
+
+            html_exporter = HTMLExporter()
+
+            html_data, resources = html_exporter.from_notebook_node(nb)
+
+            # with open(notebook_html , "w") as f:
+            #     f.write(html_data)
+            #     f.close()
+            
+            s3 = boto3.resource('s3')
+            bucket = s3.Bucket(bucket_name)
+            
+            bucket.put_object(Key=notebook_html, Body=html_data, ContentType='text/html', ACL= 'public-read' )
+       
+        post_notebook('germanyenergy','maythamalherz.com')

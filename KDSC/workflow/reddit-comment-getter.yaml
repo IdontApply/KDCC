@@ -1,0 +1,72 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: bitcoin-comment-getter-
+spec:
+  entrypoint: main-block
+  templates:
+
+  # main block
+  - name: main-block
+    parallelism: 3
+    steps:
+
+    # generate list for reddit missing data
+    - - name: generate-list-reddit
+        template: generate-list-reddit
+
+    # stream donwload reddit comments, filter non r/Bitcoin comments, load to gcs.
+    - - name: get
+        template: reddit-get-comments
+        arguments:
+          parameters:
+          - name: url
+            value: "{{item}}"
+        withParam: "{{steps.generate-list-reddit.outputs.result}}"
+  
+
+  - name: generate-list-reddit
+    script:
+      image: gcr.io/kdcc-282418/python-worker
+      command: [python]
+      source: |
+        import json
+        import sys
+        
+        def generate_year_month():
+          results = []
+          for i in range(2019,2020): 
+              for j in range(1,13):
+                  if i == 2017 and j < 11:
+                      pass
+                  else:
+                      results.append(str(i) + '-' + str(j).zfill(2))
+          return ["https://files.pushshift.io/reddit/comments/RC_{}.zst".format(x) for x in results]
+        
+        json.dump(generate_year_month(), sys.stdout)
+
+  - name: reddit-get-comments
+    inputs:
+      parameters:
+      - name: url
+    script:
+      image: gcr.io/kdcc-282418/psql-worker
+      command: [sh, -c]
+      args: ['f="$(basename -- {{inputs.parameters.url}})";
+        fgs="gs://workflowkddc/reddit/comments/raw/$f";
+        curl {{inputs.parameters.url}} | gsutil cp - $fgs;
+      ']
+# s
+
+  # if not os.path.exists('tmp'):
+  #   os.makedirs('tmp')
+  # with open("/tmp/path.txt", 'w') as w:
+  #   w.write(path)
+  # # print('func.get_parse_json_to_gcs')
+
+    # outputs:
+    #   parameters:
+    #   - name: path       # name of output parameter
+    #     valueFrom:
+    #       path: /tmp/path.txt
+

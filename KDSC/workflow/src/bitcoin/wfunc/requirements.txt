@@ -1,0 +1,10 @@
+pandas
+numpy
+shapely
+geopy
+geopandas
+requests
+matplotlib
+folium
+branca
+# needs  verisiong

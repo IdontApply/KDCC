@@ -1,0 +1,46 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: concate-
+spec:
+  entrypoint: backup
+  templates:
+
+  - name: backup
+    script:
+      image: gcr.io/kdcc-282418/python-worker
+      command: [python]
+      source: |
+        import json
+        import sys
+        from google.cloud import storage
+
+        prefix='Bitcoin/comments/processed/dollar_mention'
+        client = storage.Client()
+        bucket = client.bucket("workflowkddc")
+        def get_file_names(prefix):
+          files = []
+
+          for blob in client.list_blobs('workflowkddc', prefix=prefix):
+            files.append(str(blob.name))
+
+          return files
+
+
+        def chunks(lst, n):
+            """Yield successive n-sized chunks from lst."""
+            for i in range(0, len(lst), n):
+                yield list(map(bucket.blob ,lst[i:i + n]))
+        
+        files = get_file_names(prefix)
+        blobs = list(chunks(files,28))
+        level1 = []
+
+        for inx,oblst in enumerate(blobs):
+          composed_blob = bucket.blob('Bitcoin/comments/processed/dollar_mention/level1/{}.txt'.format(inx))
+          composed_blob.compose(oblst)
+          level1.append(composed_blob )
+        
+        composed_blob = bucket.blob('Bitcoin/comments/gold/dollar_mention.txt')
+        composed_blob.compose(level1)
+
