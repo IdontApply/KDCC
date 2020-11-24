@@ -1,6 +1,0 @@
-postgres:
-    host: postgres.default
-    user: admin
-    passwd: "admin1234"
-    db: eco
-    port: 27017

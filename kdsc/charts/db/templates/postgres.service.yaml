@@ -1,0 +1,18 @@
+{{ if  .Values.Db.Enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ template "db-fullname" . }}
+  labels:
+    heritage: {{ .Release.Service | quote }}
+    release: {{ .Release.Name | quote }}
+    chart: "{{ .Chart.Name }}-{{ .Chart.Version }}"
+    component: "{{ .Release.Name }}-{{ .Values.Db.Name }}"
+spec:
+  ports:
+    - protocol: TCP
+      port:  {{ .Values.Db.Port }}
+      targetPort: {{ .Values.Db.ContainerPort }}
+  selector:
+    component: "{{ .Release.Name }}-{{ .Values.Db.Name }}"
+{{- end }}

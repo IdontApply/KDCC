@@ -1,0 +1,13 @@
+Db:
+    Enabled: true
+    image: postgres
+    ImageTag: 11
+    Name: "db"
+    PostgresUser: "admin"
+    PostgresPassword: "admin"
+    PostgresDb: "admin"
+    ContainerPort: 5432
+    Port: 27017
+    Volume:
+        Enabled: false
+    #     MountPath:

@@ -1,0 +1,12 @@
+apiVersion: v2
+name: kdsc
+description: A Helm chart for a simple Kubernetes data science cluater  using the following tools
+type: application
+version: 0.1.0
+appVersion: 1.16.0
+
+maintainers:
+- email: gmaytham@gmail.com
+  name: Maytham
+sources:
+- https://github.com/IdontApply/KDSC

@@ -1,0 +1,17 @@
+{{ if .Values.Db.Enabled }}
+{{ if .Values.Db.Volume.Enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pv-claim
+  namespace: default
+  labels:
+    app: postgres
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+{{- end }}
+{{- end }}
